@@ -75,7 +75,7 @@ for i in range(big_dict_len):
     timer_body_3 = "\telse:\n"
     timer_body_4 = "\t\tmsg_dict['%s']['hz'] = -1\n" % msg_nake_name
     timer_body_5 = "\tmsg_dict['%s']['hz_state'] = func_checking_value(msg_dict['%s']['hz'], %s, %s)\n\n" % (msg_nake_name, msg_nake_name, hz_min, hz_max)
-    timer_body_6 = "\tnode_msg.append(node_state('%s', ret[0], msg_dict['%s']['hz_state'], msg_dict['%s']['param_value'], msg_dict['%s']['param_state']))\n\n" % (msg_nake_name, msg_nake_name, msg_nake_name, msg_nake_name)
+    timer_body_6 = "\tnode_msg.append(node_state('%s', ret[0], msg_dict['%s']['hz_state'], '%s', msg_dict['%s']['param_value'], msg_dict['%s']['param_state']))\n\n" % (msg_nake_name, msg_nake_name, check_param_name, msg_nake_name, msg_nake_name)
     tupple_timer = (timer_body_0, timer_body_1, timer_body_2, timer_body_3, timer_body_4, timer_body_5, timer_body_6)
     array_timer_callback.append(tupple_timer)
 
@@ -143,5 +143,4 @@ gen_py.write("\n")
 gen_py.writelines(_MAIN_PART_)
 
 gen_py.close()
-
 

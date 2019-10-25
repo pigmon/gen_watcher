@@ -12,7 +12,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 link_directories (
 	${catkin_LIBRARY_DIRS} 
-	"lib/" 
 	"src/"
 )
 
@@ -27,6 +26,8 @@ add_message_files(
   FILES
   Num.msg
   info.msg
+  node_state.msg
+  all_state.msg
 )
 
 generate_messages(
@@ -37,3 +38,7 @@ generate_messages(
 catkin_package(
     CATKIN_DEPENDS roscpp rospy std_msgs message_runtime
 )
+
+add_executable(test_sub src/test_sub.cpp)
+add_dependencies(test_sub ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(test_sub ${catkin_LIBRARIES})
