@@ -1,8 +1,8 @@
 #include <iostream>
 #include <ros/ros.h>
-#include "rospy_test/all_state.h"
+#include "monitor_py/all_state.h"
 
-void msg_callback(const rospy_test::all_state &msg)
+void msg_callback(const monitor_py::all_state &msg)
 {
     std::cout << "--------------------\n";
     for (auto it = msg.states.begin(); it != msg.states.end(); it++)

@@ -98,7 +98,7 @@ for i in range(big_dict_len):
 ## Code Generating
 gen_py = open('gen.py', 'w+')
 
-_STATIC_PY_HEADER_ = ("#!/usr/bin/env python\n\n", "import rospy\n", "import time\n", "from std_msgs.msg import Header\n", "from rostopic import ROSTopicHz\n", "from rospy_test.msg import node_state\n", "from rospy_test.msg import all_state\n")
+_STATIC_PY_HEADER_ = ("#!/usr/bin/env python\n\n", "import rospy\n", "import time\n", "from std_msgs.msg import Header\n", "from rostopic import ROSTopicHz\n", "from monitor_py.msg import node_state\n", "from monitor_py.msg import all_state\n")
 _STATIC_FUNC_CHECK_ = ("def func_checking_value(param, min, max):\n", "\treturn param <= max and param >= min\n")
 _TIMER_CALLBACK_HEADER = ("def timer_callback(event):\n", "\tglobal hz_checker\n", "\tglobal pub\n\n", "\tnode_msg = []\n\n")
 _MAIN_FUNC_ = ("def main():\n", "\trospy.init_node('listener', anonymous=False)\n", "\tcurr = rospy.get_rostime().to_sec()\n\n")

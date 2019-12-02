@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import rospy
-from rospy_test.msg import Num
-from rospy_test.msg import info
+from monitor_py.msg import Num
+from monitor_py.msg import info
 
 def talker():
     pub = rospy.Publisher('my_num', Num, queue_size = 10)
