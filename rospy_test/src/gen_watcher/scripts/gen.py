@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
+# 注意：这是自动生成的程序，请不要做任何修改！
 
 import rospy
 import time
