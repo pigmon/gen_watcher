@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
 import os
 import ConfigParser
 import io
@@ -75,7 +78,8 @@ for i in range(big_dict_len):
     timer_body_3 = "\telse:\n"
     timer_body_4 = "\t\tmsg_dict['%s']['hz'] = -1\n" % msg_nake_name
     timer_body_5 = "\tmsg_dict['%s']['hz_state'] = func_checking_value(msg_dict['%s']['hz'], %s, %s)\n\n" % (msg_nake_name, msg_nake_name, hz_min, hz_max)
-    timer_body_6 = "\tnode_msg.append(node_state('%s', ret[0], msg_dict['%s']['hz_state'], '%s', msg_dict['%s']['param_value'], msg_dict['%s']['param_state']))\n\n" % (msg_nake_name, msg_nake_name, check_param_name, msg_nake_name, msg_nake_name)
+    timer_body_6 = "\tnode_msg.append(node_state('%s', msg_dict['%s']['hz'], msg_dict['%s']['hz_state'], '%s', msg_dict['%s']['param_value'], msg_dict['%s']['param_state']))\n\n" %  \
+        (msg_nake_name, msg_nake_name, msg_nake_name, check_param_name, msg_nake_name, msg_nake_name)
     tupple_timer = (timer_body_0, timer_body_1, timer_body_2, timer_body_3, timer_body_4, timer_body_5, timer_body_6)
     array_timer_callback.append(tupple_timer)
 
@@ -98,7 +102,7 @@ for i in range(big_dict_len):
 ## Code Generating
 gen_py = open('gen.py', 'w+')
 
-_STATIC_PY_HEADER_ = ("#!/usr/bin/env python\n\n", "import rospy\n", "import time\n", "from std_msgs.msg import Header\n", "from rostopic import ROSTopicHz\n", "from rospy_test.msg import node_state\n", "from rospy_test.msg import all_state\n")
+_STATIC_PY_HEADER_ = ("#!/usr/bin/env python\n# -*- coding:utf-8 -*-\n\n", "# 注意：这是自动生成的程序，请不要做任何修改！\n\n", "import rospy\n", "import time\n", "from std_msgs.msg import Header\n", "from rostopic import ROSTopicHz\n", "from rospy_test.msg import node_state\n", "from rospy_test.msg import all_state\n")
 _STATIC_FUNC_CHECK_ = ("def func_checking_value(param, min, max):\n", "\treturn param <= max and param >= min\n")
 _TIMER_CALLBACK_HEADER = ("def timer_callback(event):\n", "\tglobal hz_checker\n", "\tglobal pub\n\n", "\tnode_msg = []\n\n")
 _MAIN_FUNC_ = ("def main():\n", "\trospy.init_node('listener', anonymous=False)\n", "\tcurr = rospy.get_rostime().to_sec()\n\n")
