@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
 import os
 import ConfigParser
 import io
@@ -64,7 +67,6 @@ for i in range(big_dict_len):
     callback_body_0 = "\tglobal hz_checker\n"
     callback_body_1 = "\thz_checker.callback_hz(msg, \'%s\')\n" % msg_nake_name
     callback_body_2 = "\tmsg_dict['%s']['param_value'] = msg.%s\n" % (msg_nake_name, check_param_name)
-    #callback_body_3 = "\tmsg_dict['%s']['param_state'] = func_checking_value(msg.%s, %s, %s)\n" % (msg_nake_name, check_param_name, check_param_min, check_param_max)
     tuple_check_func = ('def ' + callback_name + "(msg):\n", callback_body_0, callback_body_1, callback_body_2)
     array_check_func.append(tuple_check_func)
 
@@ -74,10 +76,10 @@ for i in range(big_dict_len):
     timer_body_2 = "\t\tmsg_dict['%s']['hz'] = ret[0]\n" % msg_nake_name
     timer_body_3 = "\telse:\n"
     timer_body_4 = "\t\tmsg_dict['%s']['hz'] = -1\n\n" % msg_nake_name
-    #timer_body_5 = "\tmsg_dict['%s']['hz_state'] = func_checking_value(msg_dict['%s']['hz'], %s, %s)\n\n" % (msg_nake_name, msg_nake_name, hz_min, hz_max)
     timer_body_5 = "\tif msg_dict['%s']['hz'] <= 0:\n\t\tmsg_dict['%s']['param_value'] = -1024\n\n" % (msg_nake_name, msg_nake_name)
+    timer_body_6 = "\tnode_msg.append(node_state('%s', msg_dict['%s']['hz'], %s, %s, '%s', msg_dict['%s']['param_value'], %s, %s))\n\n" %  \
+        (msg_nake_name, msg_nake_name, hz_min, hz_max, check_param_name, msg_nake_name, check_param_min, check_param_max)
 
-    timer_body_6 = "\tnode_msg.append(node_state('%s', msg_dict['%s']['hz'], %s, %s, '%s', msg_dict['%s']['param_value'], %s, %s))\n\n" % (msg_nake_name, msg_nake_name, hz_min, hz_max, check_param_name, msg_nake_name, check_param_min, check_param_max)
     tupple_timer = (timer_body_0, timer_body_1, timer_body_2, timer_body_3, timer_body_4, timer_body_5, timer_body_6)
     array_timer_callback.append(tupple_timer)
 
@@ -100,7 +102,7 @@ for i in range(big_dict_len):
 ## Code Generating
 gen_py = open('gen.py', 'w+')
 
-_STATIC_PY_HEADER_ = ("#!/usr/bin/env python\n\n", "import rospy\n", "import time\n", "from std_msgs.msg import Header\n", "from rostopic import ROSTopicHz\n", "from monitor_py.msg import node_state\n", "from monitor_py.msg import all_state\n")
+_STATIC_PY_HEADER_ = ("#!/usr/bin/env python\n# -*- coding:utf-8 -*-\n\n", "# 注意：这是自动生成的程序，请不要做任何修改！\n\n", "import rospy\n", "import time\n", "from std_msgs.msg import Header\n", "from rostopic import ROSTopicHz\n", "from monitor_py.msg import node_state\n", "from monitor_py.msg import all_state\n")
 _STATIC_FUNC_CHECK_ = ("def func_checking_value(param, min, max):\n", "\treturn param <= max and param >= min\n")
 _TIMER_CALLBACK_HEADER = ("def timer_callback(event):\n", "\tglobal hz_checker\n", "\tglobal pub\n\n", "\tnode_msg = []\n\n")
 _MAIN_FUNC_ = ("def main():\n", "\trospy.init_node('listener', anonymous=False)\n", "\tcurr = rospy.get_rostime().to_sec()\n\n")
