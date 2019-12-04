@@ -1,0 +1,8 @@
+prefix=/home/pigmon/Workspace/Beiqi/gen_watcher/rospy_test/devel
+
+Name: monitor_py
+Description: Description of monitor_py
+Version: 0.0.0
+Cflags: -I/home/pigmon/Workspace/Beiqi/gen_watcher/rospy_test/devel/include
+Libs: -L/home/pigmon/Workspace/Beiqi/gen_watcher/rospy_test/devel/lib 
+Requires: roscpp rospy std_msgs message_runtime

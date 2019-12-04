@@ -64,8 +64,8 @@ for i in range(big_dict_len):
     callback_body_0 = "\tglobal hz_checker\n"
     callback_body_1 = "\thz_checker.callback_hz(msg, \'%s\')\n" % msg_nake_name
     callback_body_2 = "\tmsg_dict['%s']['param_value'] = msg.%s\n" % (msg_nake_name, check_param_name)
-    callback_body_3 = "\tmsg_dict['%s']['param_state'] = func_checking_value(msg.%s, %s, %s)\n" % (msg_nake_name, check_param_name, check_param_min, check_param_max)
-    tuple_check_func = ('def ' + callback_name + "(msg):\n", callback_body_0, callback_body_1, callback_body_2, callback_body_3)
+    #callback_body_3 = "\tmsg_dict['%s']['param_state'] = func_checking_value(msg.%s, %s, %s)\n" % (msg_nake_name, check_param_name, check_param_min, check_param_max)
+    tuple_check_func = ('def ' + callback_name + "(msg):\n", callback_body_0, callback_body_1, callback_body_2)
     array_check_func.append(tuple_check_func)
 
     # 3. timer_callback
@@ -73,9 +73,11 @@ for i in range(big_dict_len):
     timer_body_1 = "\tif isinstance(ret, tuple) and len(ret) == 5:\n"
     timer_body_2 = "\t\tmsg_dict['%s']['hz'] = ret[0]\n" % msg_nake_name
     timer_body_3 = "\telse:\n"
-    timer_body_4 = "\t\tmsg_dict['%s']['hz'] = -1\n" % msg_nake_name
-    timer_body_5 = "\tmsg_dict['%s']['hz_state'] = func_checking_value(msg_dict['%s']['hz'], %s, %s)\n\n" % (msg_nake_name, msg_nake_name, hz_min, hz_max)
-    timer_body_6 = "\tnode_msg.append(node_state('%s', ret[0], msg_dict['%s']['hz_state'], '%s', msg_dict['%s']['param_value'], msg_dict['%s']['param_state']))\n\n" % (msg_nake_name, msg_nake_name, check_param_name, msg_nake_name, msg_nake_name)
+    timer_body_4 = "\t\tmsg_dict['%s']['hz'] = -1\n\n" % msg_nake_name
+    #timer_body_5 = "\tmsg_dict['%s']['hz_state'] = func_checking_value(msg_dict['%s']['hz'], %s, %s)\n\n" % (msg_nake_name, msg_nake_name, hz_min, hz_max)
+    timer_body_5 = "\tif msg_dict['%s']['hz'] <= 0:\n\t\tmsg_dict['%s']['param_value'] = -1024\n\n" % (msg_nake_name, msg_nake_name)
+
+    timer_body_6 = "\tnode_msg.append(node_state('%s', msg_dict['%s']['hz'], %s, %s, '%s', msg_dict['%s']['param_value'], %s, %s))\n\n" % (msg_nake_name, msg_nake_name, hz_min, hz_max, check_param_name, msg_nake_name, check_param_min, check_param_max)
     tupple_timer = (timer_body_0, timer_body_1, timer_body_2, timer_body_3, timer_body_4, timer_body_5, timer_body_6)
     array_timer_callback.append(tupple_timer)
 
@@ -109,7 +111,7 @@ _TIMER_TAIL_ = ("\theader = Header(stamp=rospy.Time.now())\n", "\tbig_msg = all_
 gen_py.writelines(_STATIC_PY_HEADER_)
 gen_py.writelines(array_import)
 gen_py.write("\nhz_checker = ROSTopicHz(10, use_wtime=True)\n\n")
-gen_py.writelines(("msg_dict = {}\n", "msg_keys = ['msg', 'hz', 'hz_state', 'param', 'param_value', 'param_state']\n"))
+gen_py.writelines(("msg_dict = {}\n", "msg_keys = ['msg', 'hz', 'hz_min', 'hz_max', 'param', 'param_value', 'param_min', 'param_max']\n"))
 gen_py.write("pub = rospy.Publisher('node_states', all_state, queue_size = 10)\n")
 gen_py.write("\n")
 

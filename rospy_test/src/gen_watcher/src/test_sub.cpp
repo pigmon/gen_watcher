@@ -9,10 +9,12 @@ void msg_callback(const monitor_py::all_state &msg)
     {
         std::cout << it->msg_name << ":\n";
         std::cout << "Topic sequence in hz: " << it->hz << std::endl;
-        std::cout << "Topic sequence state: " << (int)it->hz_state << std::endl;
+        std::cout << "Topic sequence min: " << (int)it->hz_min << std::endl;
+        std::cout << "Topic sequence max: " << (int)it->hz_max << std::endl;
         std::cout << "Watching param name: " << it->param_name << std::endl;
         std::cout << "Param value: " << it->param_value << std::endl;
-        std::cout << "Param State: " << (int)it->param_state << std::endl;
+        std::cout << "Param Min: " << (int)it->param_min << std::endl;
+        std::cout << "Param Max: " << (int)it->param_max << std::endl;
     }
 }
 
