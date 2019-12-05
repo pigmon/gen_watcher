@@ -3,37 +3,39 @@ project(monitor_py)
 
 add_compile_options(-std=c++11)
 
-find_package(catkin REQUIRED COMPONENTS 
+find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
   message_generation
+  gen_watcher_msgs
 )
 
 link_directories (
-	${catkin_LIBRARY_DIRS} 
+	${catkin_LIBRARY_DIRS}
 	"src/"
 )
 
 include_directories(
-  ${catkin_INCLUDE_DIRS} 
+  ${catkin_INCLUDE_DIRS}
+  include
   "include/"
 )
 
 set(CMAKE_AUTOMOC ON)
 
-add_message_files(
-  FILES
-  Num.msg
-  info.msg
-  node_state.msg
-  all_state.msg
-)
+# add_message_files(
+#   FILES
+#   Num.msg
+#   info.msg
+#   node_state.msg
+#   all_state.msg
+# )
 
-generate_messages(
-  DEPENDENCIES
-  std_msgs 
-)
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs
+# )
 
 catkin_package(
     CATKIN_DEPENDS roscpp rospy std_msgs message_runtime

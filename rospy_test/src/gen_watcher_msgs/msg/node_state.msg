@@ -1,0 +1,9 @@
+# 一个监视消息的数据
+string msg_name
+float64 hz
+float64 hz_min
+float64 hz_max
+string param_name
+float64 param_value
+float64 param_min
+float64 param_max

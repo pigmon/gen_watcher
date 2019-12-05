@@ -1,6 +1,6 @@
 #include <iostream>
 #include <ros/ros.h>
-#include "monitor_py/all_state.h"
+#include "gen_watcher_msgs/all_state.h"
 
 const unsigned char NO_ERR   = 0;
 const unsigned char VALUE_LD = 1;
@@ -42,10 +42,10 @@ struct Monitor
 
 Monitor obj_monitor;
 
-void msg_callback(const monitor_py::all_state &msg)
+void msg_callback(const gen_watcher_msgs::all_state::ConstPtr &msg)
 {
     std::cout << "--------------------\n";
-    for (auto it = msg.states.begin(); it != msg.states.end(); it++)
+    for (auto it = msg->states.begin(); it != msg->states.end(); it++)
     {
         std::cout << it->msg_name << ":\n";
         std::cout << "Topic sequence in hz: " << it->hz << std::endl;
@@ -74,6 +74,8 @@ int main(int argc,char ** argv)
     ros::init(argc,argv,"test_sub");
     ros::NodeHandle n;
     ros::Subscriber msg_sub = n.subscribe("node_states", 100, msg_callback);
+
+    std::cout << "size of Monitor: " << sizeof(Monitor) << std::endl;
 
     ros::spin();
 
