@@ -17,12 +17,17 @@ struct Monitor
     unsigned char m_param_lidar :2;
     unsigned char m_hz_radar    :2;
     unsigned char m_param_radar :2;
+    unsigned char m_hz_cam      :2;
+    unsigned char m_param_cam   :2;
+    unsigned char m_hz_bz       :2;
+    unsigned char m_param_bz    :2;
 
     void Print()
     {
-        printf ("%d, %d, %d, %d, %d, %d, %d, %d\n", 
+        printf ("%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n", 
             m_hz_gps, m_param_gps, m_hz_imu, m_param_imu, m_hz_lidar, 
-            m_param_lidar, m_hz_radar, m_param_radar);
+            m_param_lidar, m_hz_radar, m_param_radar, m_hz_cam, m_param_cam, 
+            m_hz_bz, m_param_bz);
     }
 
     void CalcuGPS(const double _hz_real, const double _hz_min, const double _hz_max, 
@@ -37,6 +42,13 @@ struct Monitor
     {
         m_hz_imu = (_hz_real < 0) ? NO_VALUE : ((_hz_real > _hz_max) ? VALUE_GD : ((_hz_real < _hz_min) ? VALUE_LD : NO_ERR));
         m_param_imu = (_hz_real < 0) ? NO_VALUE : ((_value_real > _max) ? VALUE_GD : ((_value_real < _min) ? VALUE_LD : NO_ERR));
+    }
+
+    void CalcuCAM(const double _hz_real, const double _hz_min, const double _hz_max, 
+        const double _value_real, const double _min, const double _max)
+    {
+        m_hz_cam = (_hz_real < 0) ? NO_VALUE : ((_hz_real > _hz_max) ? VALUE_GD : ((_hz_real < _hz_min) ? VALUE_LD : NO_ERR));
+        m_param_cam = (_hz_real < 0) ? NO_VALUE : ((_value_real > _max) ? VALUE_GD : ((_value_real < _min) ? VALUE_LD : NO_ERR));
     }
 };
 
@@ -63,6 +75,10 @@ void msg_callback(const gen_watcher_msgs::all_state::ConstPtr &msg)
         else if (it->msg_name == "/imu/data")
         {
             obj_monitor.CalcuIMU(it->hz, it->hz_min, it->hz_max, it->param_value, it->param_min, it->param_max);
+        }
+        else if (it->msg_name == "/Flir/image_raw")
+        {
+            obj_monitor.CalcuCAM(it->hz, it->hz_min, it->hz_max, it->param_value, it->param_min, it->param_max);
         }
     }
 

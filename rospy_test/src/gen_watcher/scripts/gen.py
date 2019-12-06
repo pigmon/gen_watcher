@@ -7,10 +7,11 @@ import rospy
 import time
 from std_msgs.msg import Header
 from rostopic import ROSTopicHz
-from monitor_py.msg import node_state
-from monitor_py.msg import all_state
+from gen_watcher_msgs.msg import node_state
+from gen_watcher_msgs.msg import all_state
 from sensor_msgs.msg import Imu
 from sensor_msgs.msg import NavSatFix
+from sensor_msgs.msg import Image
 
 hz_checker = ROSTopicHz(10, use_wtime=True)
 
@@ -49,6 +50,17 @@ def timer_callback(event):
 
 	node_msg.append(node_state('/gps', msg_dict['/gps']['hz'], 30, 1000, 'longitude', msg_dict['/gps']['param_value'], -180, 180))
 
+	ret = hz_checker.get_hz('/Flir/image_raw')
+	if isinstance(ret, tuple) and len(ret) == 5:
+		msg_dict['/Flir/image_raw']['hz'] = ret[0]
+	else:
+		msg_dict['/Flir/image_raw']['hz'] = -1
+
+	if msg_dict['/Flir/image_raw']['hz'] <= 0:
+		msg_dict['/Flir/image_raw']['param_value'] = -1024
+
+	node_msg.append(node_state('/Flir/image_raw', msg_dict['/Flir/image_raw']['hz'], 58, 1000, 'width', msg_dict['/Flir/image_raw']['param_value'], 1200, 2048))
+
 	header = Header(stamp=rospy.Time.now())
 	big_msg = all_state(header, node_msg)
 	pub.publish(big_msg)
@@ -63,6 +75,11 @@ def sensor_msgs_NavSatFix_callback(msg):
 	hz_checker.callback_hz(msg, '/gps')
 	msg_dict['/gps']['param_value'] = msg.longitude
 
+def sensor_msgs_Image_callback(msg):
+	global hz_checker
+	hz_checker.callback_hz(msg, '/Flir/image_raw')
+	msg_dict['/Flir/image_raw']['param_value'] = msg.width
+
 def main():
 	rospy.init_node('listener', anonymous=False)
 	curr = rospy.get_rostime().to_sec()
@@ -75,12 +92,18 @@ def main():
 	sec_dict['msg'] = '/gps'
 	msg_dict['/gps'] = sec_dict
 	msg_dict['/gps']['param'] = 'longitude'
+	sec_dict = dict.fromkeys(msg_keys)
+	sec_dict['msg'] = '/Flir/image_raw'
+	msg_dict['/Flir/image_raw'] = sec_dict
+	msg_dict['/Flir/image_raw']['param'] = 'width'
 
 	hz_checker.set_msg_t0(curr, topic = '/imu/data')
 	hz_checker.set_msg_t0(curr, topic = '/gps')
+	hz_checker.set_msg_t0(curr, topic = '/Flir/image_raw')
 
 	rospy.Subscriber('/imu/data', Imu, sensor_msgs_Imu_callback)
 	rospy.Subscriber('/gps', NavSatFix, sensor_msgs_NavSatFix_callback)
+	rospy.Subscriber('/Flir/image_raw', Image, sensor_msgs_Image_callback)
 
 	rospy.Timer(rospy.Duration(1), timer_callback)
 
