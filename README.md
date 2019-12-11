@@ -7,7 +7,7 @@ https://github.com/pigmon/gen_watcher.git
 
 clone 命令：
 ```shell
-git clone -b beiqi 
+git clone -b beiqi https://github.com/pigmon/gen_watcher.git
 ```
 
 ## 1.1 使用流程
@@ -49,4 +49,19 @@ float64 param_max       # 配置文件中设置的参数值（或 size）的最�
 ```
 
 ## 4. C++ 端接收解析
+例子程序位于：src\gen_watcher\src\test_sub.cpp
+按照目前商讨的结果，接收到消息后，会将结果统计为一个只包含各个模块状态变量的结构体中，并需要有将结构体编码成64位以内的报文的功能。
 
+状态变量取值范围：int[0,3]
+0：无错误
+1：值过小
+2：值过大
+3：没有得到值
+
+例子中包含以下主要示范：
+- 结构体定义；
+- 在订阅 node_states 消息的 callback 中刷新结构体数值；
+- 自动将结构体变量编码成32位整数；
+- 从32位整数解码成结构体变量；
+
+代码文档请参考：
