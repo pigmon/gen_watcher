@@ -62,6 +62,27 @@ float64 param_max       # 配置文件中设置的参数值（或 size）的最�
 - 结构体定义；
 - 在订阅 node_states 消息的 callback 中刷新结构体数值；
 - 自动将结构体变量编码成32位整数；
-- 从32位整数解码成结构体变量；
+- 从32位整数解码成结构体变量（上一条的逆运算）；
 
 代码文档请参考：
+https://github.com/pigmon/gen_watcher/blob/beiqi/rospy_test/src/gen_watcher/src/readme.md
+
+## 5. 监控内容 （2019年12月11日更新）
+### 5.1 GPS
+Topic: /gps;
+频率：30 以上;
+监控参数：待定;
+### 5.2 惯导
+Topic：/imu/data;
+频率：30以上;
+监控参数：待定;
+### 5.3 激光雷达
+Topic：/rslidar_points;
+频率：9 以上;
+监控参数：size of data;
+参数范围：2,000,000 以上;
+### 5.4 摄像头（视觉）
+Topic：/Flir/image_raw;
+频率：58 以上;
+监控参数：width;
+参数范围：1024,2048;
