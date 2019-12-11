@@ -12,7 +12,7 @@ bool IsBigEndian();
 
 typedef union 
 {
-    uint32_t bits;
+    uint32_t EncodedInt;
     struct Monitor
     {
         unsigned char m_hz_gps      :2;
@@ -123,6 +123,13 @@ typedef union
             m_hz_cam = (_hz_real < 0) ? NO_VALUE : ((_hz_real > _hz_max) ? VALUE_GD : ((_hz_real < _hz_min) ? VALUE_LD : NO_ERR));
             m_param_cam = (_hz_real < 0) ? NO_VALUE : ((_value_real > _max) ? VALUE_GD : ((_value_real < _min) ? VALUE_LD : NO_ERR));
         }
+
+        void CalcuLidar(const double _hz_real, const double _hz_min, const double _hz_max, 
+            const double _value_real, const double _min, const double _max)
+        {
+            m_hz_lidar = (_hz_real < 0) ? NO_VALUE : ((_hz_real > _hz_max) ? VALUE_GD : ((_hz_real < _hz_min) ? VALUE_LD : NO_ERR));
+            m_param_lidar = (_hz_real < 0) ? NO_VALUE : ((_value_real > _max) ? VALUE_GD : ((_value_real < _min) ? VALUE_LD : NO_ERR));
+        }
     } struct_monitor;
 
     
@@ -148,14 +155,14 @@ void msg_callback(const gen_watcher_msgs::all_state::ConstPtr &msg)
     std::cout << "--------------------\n";
     for (auto it = msg->states.begin(); it != msg->states.end(); it++)
     {
-        std::cout << it->msg_name << ":\n";
-        std::cout << "Topic sequence in hz: " << it->hz << std::endl;
-        std::cout << "Topic sequence min: " << (int)it->hz_min << std::endl;
-        std::cout << "Topic sequence max: " << (int)it->hz_max << std::endl;
-        std::cout << "Watching param name: " << it->param_name << std::endl;
-        std::cout << "Param value: " << it->param_value << std::endl;
-        std::cout << "Param Min: " << (int)it->param_min << std::endl;
-        std::cout << "Param Max: " << (int)it->param_max << std::endl;
+        // std::cout << it->msg_name << ":\n";
+        // std::cout << "Topic sequence in hz: " << it->hz << std::endl;
+        // std::cout << "Topic sequence min: " << (int)it->hz_min << std::endl;
+        // std::cout << "Topic sequence max: " << (int)it->hz_max << std::endl;
+        // std::cout << "Watching param name: " << it->param_name << std::endl;
+        // std::cout << "Param value: " << it->param_value << std::endl;
+        // std::cout << "Param Min: " << (int)it->param_min << std::endl;
+        // std::cout << "Param Max: " << (int)it->param_max << std::endl;
 
         if (it->msg_name == "/gps")
         {
@@ -169,9 +176,16 @@ void msg_callback(const gen_watcher_msgs::all_state::ConstPtr &msg)
         {
             obj_monitor.struct_monitor.CalcuCAM(it->hz, it->hz_min, it->hz_max, it->param_value, it->param_min, it->param_max);
         }
+        else if (it->msg_name == "/rslidar_points")
+        {
+            obj_monitor.struct_monitor.CalcuLidar(it->hz, it->hz_min, it->hz_max, it->param_value, it->param_min, it->param_max);
+        }
     }
 
-    obj_monitor.struct_monitor.Print();
+    std::cout << "Struct Value in Bigendian: \n"; 
+    obj_monitor.struct_monitor.PrintBinInBigendian();
+    std::cout << "Encoded Int Value : (Is Bigendian" << IsBigEndian() << ")\n";
+    std::cout << std::bitset<32>(obj_monitor.EncodedInt) << std::endl;
 }
 
 int main(int argc,char ** argv)
@@ -180,7 +194,7 @@ int main(int argc,char ** argv)
     ros::NodeHandle n;
     ros::Subscriber msg_sub = n.subscribe("node_states", 100, msg_callback);
 
-    std::cout << "size of Monitor: " << sizeof(Monitor) << std::endl;
+    //std::cout << "size of Monitor: " << sizeof(Monitor) << std::endl;
 
     ros::spin();
 

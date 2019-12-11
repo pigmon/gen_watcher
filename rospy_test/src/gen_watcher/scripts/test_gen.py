@@ -7,7 +7,7 @@ import io
 
 ## Reading INI
 big_dict = []
-dict_keys = ['package', 'msg', 'msg_nake_name', 'check_param', 'min', 'max', 'hz_min', 'hz_max']
+dict_keys = ['package', 'msg', 'msg_nake_name', 'check_param', 'min', 'max', 'is_check_size', 'hz_min', 'hz_max']
 
 # Load the configuration file
 with open("../config/watch.ini") as f:
@@ -27,6 +27,7 @@ for section in config.sections():
     array_split = str_param_checking.split(',')
     dict_sec['min'] = array_split[1]
     dict_sec['max'] = array_split[2]
+    dict_sec['is_check_size'] = config.get(section, 'CHECKING_SIZE')
     str_param_checking_hz = config.get(section, 'HZ_RANGE')
     array_split_hz = str_param_checking_hz.split(',')
     dict_sec['hz_min'] = array_split_hz[0]
@@ -56,6 +57,7 @@ for i in range(big_dict_len):
     check_param_name = dict['check_param']
     check_param_min = dict['min']
     check_param_max = dict['max']
+    is_check_size = dict['is_check_size']
     hz_min = dict['hz_min']
     hz_max = dict['hz_max']
 
@@ -66,7 +68,11 @@ for i in range(big_dict_len):
     callback_name = package_name + '_' + msg_name + '_callback'
     callback_body_0 = "\tglobal hz_checker\n"
     callback_body_1 = "\thz_checker.callback_hz(msg, \'%s\')\n" % msg_nake_name
-    callback_body_2 = "\tmsg_dict['%s']['param_value'] = msg.%s\n" % (msg_nake_name, check_param_name)
+    if is_check_size == '0':
+        callback_body_2 = "\tmsg_dict['%s']['param_value'] = msg.%s\n" % (msg_nake_name, check_param_name)
+    else:
+        callback_body_2 = "\tmsg_dict['%s']['param_value'] = len(msg.%s)\n" % (msg_nake_name, check_param_name)
+
     tuple_check_func = ('def ' + callback_name + "(msg):\n", callback_body_0, callback_body_1, callback_body_2)
     array_check_func.append(tuple_check_func)
 
