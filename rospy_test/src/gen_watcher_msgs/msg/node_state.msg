@@ -7,3 +7,4 @@ string param_name
 float64 param_value
 float64 param_min
 float64 param_max
+float64[] extra

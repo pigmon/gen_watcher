@@ -13,11 +13,12 @@ from sensor_msgs.msg import Imu
 from sensor_msgs.msg import NavSatFix
 from sensor_msgs.msg import Image
 from sensor_msgs.msg import PointCloud2
+from gen_watcher_msgs.msg import arr_test
 
 hz_checker = ROSTopicHz(10, use_wtime=True)
 
 msg_dict = {}
-msg_keys = ['msg', 'hz', 'hz_min', 'hz_max', 'param', 'param_value', 'param_min', 'param_max']
+msg_keys = ['msg', 'hz', 'hz_min', 'hz_max', 'param', 'param_value', 'param_min', 'param_max', 'extra']
 pub = rospy.Publisher('node_states', all_state, queue_size = 10)
 
 def func_checking_value(param, min, max):
@@ -38,7 +39,7 @@ def timer_callback(event):
 	if msg_dict['/imu/data']['hz'] <= 0:
 		msg_dict['/imu/data']['param_value'] = -1024
 
-	node_msg.append(node_state('/imu/data', msg_dict['/imu/data']['hz'], 30, 1000, 'linear_acceleration.x', msg_dict['/imu/data']['param_value'], 0.03, 10))
+	node_msg.append(node_state('/imu/data', msg_dict['/imu/data']['hz'], 30, 1000, 'linear_acceleration.x', msg_dict['/imu/data']['param_value'], 0.03, 10, msg_dict['/imu/data']['extra']))
 
 	ret = hz_checker.get_hz('/gps')
 	if isinstance(ret, tuple) and len(ret) == 5:
@@ -49,7 +50,7 @@ def timer_callback(event):
 	if msg_dict['/gps']['hz'] <= 0:
 		msg_dict['/gps']['param_value'] = -1024
 
-	node_msg.append(node_state('/gps', msg_dict['/gps']['hz'], 30, 1000, 'longitude', msg_dict['/gps']['param_value'], -180, 180))
+	node_msg.append(node_state('/gps', msg_dict['/gps']['hz'], 30, 1000, 'longitude', msg_dict['/gps']['param_value'], -180, 180, msg_dict['/gps']['extra']))
 
 	ret = hz_checker.get_hz('/Flir/image_raw')
 	if isinstance(ret, tuple) and len(ret) == 5:
@@ -60,7 +61,7 @@ def timer_callback(event):
 	if msg_dict['/Flir/image_raw']['hz'] <= 0:
 		msg_dict['/Flir/image_raw']['param_value'] = -1024
 
-	node_msg.append(node_state('/Flir/image_raw', msg_dict['/Flir/image_raw']['hz'], 58, 1000, 'width', msg_dict['/Flir/image_raw']['param_value'], 1200, 2048))
+	node_msg.append(node_state('/Flir/image_raw', msg_dict['/Flir/image_raw']['hz'], 58, 1000, 'width', msg_dict['/Flir/image_raw']['param_value'], 1200, 2048, msg_dict['/Flir/image_raw']['extra']))
 
 	ret = hz_checker.get_hz('/rslidar_points')
 	if isinstance(ret, tuple) and len(ret) == 5:
@@ -71,7 +72,18 @@ def timer_callback(event):
 	if msg_dict['/rslidar_points']['hz'] <= 0:
 		msg_dict['/rslidar_points']['param_value'] = -1024
 
-	node_msg.append(node_state('/rslidar_points', msg_dict['/rslidar_points']['hz'], 8, 1000, 'data', msg_dict['/rslidar_points']['param_value'], 2000000, 3000000))
+	node_msg.append(node_state('/rslidar_points', msg_dict['/rslidar_points']['hz'], 9, 1000, 'data', msg_dict['/rslidar_points']['param_value'], 2000000, 3000000, msg_dict['/rslidar_points']['extra']))
+
+	ret = hz_checker.get_hz('/arr_num')
+	if isinstance(ret, tuple) and len(ret) == 5:
+		msg_dict['/arr_num']['hz'] = ret[0]
+	else:
+		msg_dict['/arr_num']['hz'] = -1
+
+	if msg_dict['/arr_num']['hz'] <= 0:
+		msg_dict['/arr_num']['param_value'] = -1024
+
+	node_msg.append(node_state('/arr_num', msg_dict['/arr_num']['hz'], 9, 1000, 'num', msg_dict['/arr_num']['param_value'], 1, 1000, msg_dict['/arr_num']['extra']))
 
 	header = Header(stamp=rospy.Time.now())
 	big_msg = all_state(header, node_msg)
@@ -97,6 +109,13 @@ def sensor_msgs_PointCloud2_callback(msg):
 	hz_checker.callback_hz(msg, '/rslidar_points')
 	msg_dict['/rslidar_points']['param_value'] = len(msg.data)
 
+def gen_watcher_msgs_arr_test_callback(msg):
+	global hz_checker
+	hz_checker.callback_hz(msg, '/arr_num')
+	msg_dict['/arr_num']['extra'] = []
+	for i in range(len(msg.numbers)):
+		msg_dict['/arr_num']['extra'].append(msg.numbers[i].num)
+
 def main():
 	rospy.init_node('listener', anonymous=False)
 	curr = rospy.get_rostime().to_sec()
@@ -117,16 +136,22 @@ def main():
 	sec_dict['msg'] = '/rslidar_points'
 	msg_dict['/rslidar_points'] = sec_dict
 	msg_dict['/rslidar_points']['param'] = 'data'
+	sec_dict = dict.fromkeys(msg_keys)
+	sec_dict['msg'] = '/arr_num'
+	msg_dict['/arr_num'] = sec_dict
+	msg_dict['/arr_num']['param'] = 'num'
 
 	hz_checker.set_msg_t0(curr, topic = '/imu/data')
 	hz_checker.set_msg_t0(curr, topic = '/gps')
 	hz_checker.set_msg_t0(curr, topic = '/Flir/image_raw')
 	hz_checker.set_msg_t0(curr, topic = '/rslidar_points')
+	hz_checker.set_msg_t0(curr, topic = '/arr_num')
 
 	rospy.Subscriber('/imu/data', Imu, sensor_msgs_Imu_callback)
 	rospy.Subscriber('/gps', NavSatFix, sensor_msgs_NavSatFix_callback)
 	rospy.Subscriber('/Flir/image_raw', Image, sensor_msgs_Image_callback)
 	rospy.Subscriber('/rslidar_points', PointCloud2, sensor_msgs_PointCloud2_callback)
+	rospy.Subscriber('/arr_num', arr_test, gen_watcher_msgs_arr_test_callback)
 
 	rospy.Timer(rospy.Duration(1), timer_callback)
 

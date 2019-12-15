@@ -18,6 +18,7 @@ add_message_files(
   info.msg
   node_state.msg
   all_state.msg
+  arr_test.msg
 )
 
 generate_messages(
