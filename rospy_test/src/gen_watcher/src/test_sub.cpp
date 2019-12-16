@@ -27,8 +27,8 @@ typedef union
         unsigned char m_param_cam   :2;
         unsigned char m_hz_bz       :2;
         unsigned char m_param_bz    :2;
-        unsigned char m_place_holder_0  :2;
-        unsigned char m_place_holder_1  :2;
+        unsigned char m_hz_light    :2;
+        unsigned char m_param_light :2;
         unsigned char m_place_holder_2  :2;
         unsigned char m_place_holder_3  :2;
 
@@ -54,8 +54,8 @@ typedef union
                 std::bitset<2>(m_param_cam) << 
                 std::bitset<2>(m_hz_bz) << 
                 std::bitset<2>(m_param_bz) << 
-                std::bitset<2>(m_place_holder_0) << 
-                std::bitset<2>(m_place_holder_1) << 
+                std::bitset<2>(m_hz_light) << 
+                std::bitset<2>(m_param_light) << 
                 std::bitset<2>(m_place_holder_2) << 
                 std::bitset<2>(m_place_holder_3) << std::endl;
         }
@@ -77,8 +77,8 @@ typedef union
                 m_param_cam = _encoded >> 12;
                 m_hz_bz = _encoded >> 10;
                 m_param_bz = _encoded >> 8;
-                m_place_holder_0 = _encoded >> 6;
-                m_place_holder_1 = _encoded >> 4;
+                m_hz_light = _encoded >> 6;
+                m_param_light = _encoded >> 4;
                 m_place_holder_2 = _encoded >> 2;
                 m_place_holder_3 = _encoded;                
             }
@@ -96,8 +96,8 @@ typedef union
                 m_param_cam = _encoded >> 18;
                 m_hz_bz = _encoded >> 20;
                 m_param_bz = _encoded >> 22;
-                m_place_holder_0 = _encoded >> 24;
-                m_place_holder_1 = _encoded >> 26;
+                m_hz_light = _encoded >> 24;
+                m_param_light = _encoded >> 26;
                 m_place_holder_2 = _encoded >> 28;
                 m_place_holder_3 = _encoded >> 30;
             }
@@ -129,6 +129,22 @@ typedef union
         {
             m_hz_lidar = (_hz_real < 0) ? NO_VALUE : ((_hz_real > _hz_max) ? VALUE_GD : ((_hz_real < _hz_min) ? VALUE_LD : NO_ERR));
             m_param_lidar = (_hz_real < 0) ? NO_VALUE : ((_value_real > _max) ? VALUE_GD : ((_value_real < _min) ? VALUE_LD : NO_ERR));
+        }
+
+        void CalcuLight(const double _hz_real, const double _hz_min, const double _hz_max, 
+            std::vector<double> _extra_array, const double _min, const double _max)
+        {
+            m_hz_light = (_hz_real < 0) ? NO_VALUE : ((_hz_real > _hz_max) ? VALUE_GD : ((_hz_real < _hz_min) ? VALUE_LD : NO_ERR));
+
+            m_param_light = 0;
+            for (size_t i = 0; i < _extra_array.size(); i++)
+            {
+                if (_extra_array[i] < _min || _extra_array[i] > _max)
+                {
+                    m_param_light = 3;
+                    break;
+                }
+            }
         }
     } struct_monitor;
 
@@ -179,6 +195,10 @@ void msg_callback(const gen_watcher_msgs::all_state::ConstPtr &msg)
         else if (it->msg_name == "/rslidar_points")
         {
             obj_monitor.struct_monitor.CalcuLidar(it->hz, it->hz_min, it->hz_max, it->param_value, it->param_min, it->param_max);
+        }
+        else if (it->msg_name == "/arr_num")
+        {
+            obj_monitor.struct_monitor.CalcuLight(it->hz, it->hz_min, it->hz_max, it->extra, it->param_min, it->param_max);
         }
     }
 

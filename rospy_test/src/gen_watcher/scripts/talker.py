@@ -24,8 +24,8 @@ def talker():
         # array test
         num_list = []
         header = Header(stamp=rospy.Time.now())
-        for i in range(1, 10):
-            num_list.append(Num(i))
+        for i in range(0, 3):
+            num_list.append(Num(0))
         test_msg = arr_test(header, num_list)
         pub2.publish(test_msg)
 
