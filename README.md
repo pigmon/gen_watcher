@@ -17,19 +17,22 @@ git clone -b beiqi https://github.com/pigmon/gen_watcher.git
  - 接收名为 node_states 的 Topic 并使用监控结果
  
 ## 2. 配置文件说明
+#### 12月16日更新 修改 CHECKING_SIZE 为 CHECKING_TYPE; 增加 ARR_NAME
 ```ini
 [lidar]
 SOURCE_FILE=                           # 暂时没用
-PACKAGE=sensor_msgs                    # 消息包名，用于生成包含头文件的程序
-MSG=PointCloud2                        # 消息类型名
-MSG_NAKE_NAME=/rslidar_points          # 消息名
-CHECKING_PARAM=data                    # 要监视的消息成员
-CHECKING_VALUE=int64,2000000,3000000   # 受监视成员正常值的最小值，最大值 
-CHECKING_SIZE=1                        # 1 - 检查参数size；0 - 检查参数值
+PACKAGE=gen_watcher_msgs               # 消息包名，用于生成包含头文件的程序
+MSG=arr_test                           # 消息类型名
+MSG_NAKE_NAME=/arr_num                 # 消息名
+CHECKING_PARAM=num                     # 要监视的消息成员
+CHECKING_VALUE=int64,1,1000            # 受监视成员正常值的最小值，最大值 
+CHECKING_TYPE=2                        # 0 - 检查参数值; 1 - 检查参数size；2 - 检查ARR_NAME中的数组
 HZ_RANGE=9,1000                        # 消息广播频率正常值的最小值，最大值
+ARR_NAME=numbers                       # 检查的数组名
 ```
 
 ## 3. 消息格式说明
+#### 12月16日更新 增加 extra
 使用时只需接收 all_state.msg，它的定义如下：
 ```python
 Header header
@@ -46,6 +49,7 @@ string param_name       # 监视的参数名
 float64 param_value     # 实时获取的参数值 （或 size）
 float64 param_min       # 配置文件中设置的参数值（或 size）的最小值
 float64 param_max       # 配置文件中设置的参数值（或 size）的最大值
+float64[] extra         # 只有在配置文件CHECKING_TYPE==2时才生效的检查数组名
 ```
 
 ## 4. C++ 端接收解析
