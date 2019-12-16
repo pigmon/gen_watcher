@@ -26,8 +26,8 @@ struct Monitor
         unsigned char m_param_cam   :2;
         unsigned char m_hz_bz       :2;
         unsigned char m_param_bz    :2;
-        unsigned char m_place_holder_0  :2;
-        unsigned char m_place_holder_1  :2;
+        unsigned char m_hz_light    :2;
+        unsigned char m_param_light :2;
         unsigned char m_place_holder_2  :2;
         unsigned char m_place_holder_3  :2;
 } struct_monitor;
@@ -35,7 +35,7 @@ struct Monitor
 每相邻两个状态量针对一个模块，分别是频率状态和监视参数状态。从变量名容易看出监视内容。
 ### 3.1 命名说明
 - m_hz_ 前缀代表频率检查状态，m_param_ 前缀代表参数检查状态
-- gps，imu-惯导，lidar-激光雷达，radar-毫米波雷达，cam-摄像头，bz-盲区
+- gps，imu-惯导，lidar-激光雷达，radar-毫米波雷达，cam-摄像头，bz-盲区, light-交通灯
 ### 3.2 取值范围
 每个状态量占2位，即取值范围是0,1,2,3这4个值，其中：
 - 0 - 无错误；
@@ -85,3 +85,5 @@ void FromEncodedInt(uint32_t _encoded, bool _big_endian)
 用于在 msg_callback 中，接收到消息后更新 m_hz_cam 和 m_param_cam，参考 msg_callback 函数。
 ### 6.9 Monitor.struct_monitor.CalcuLidar
 用于在 msg_callback 中，接收到消息后更新 m_hz_lidar 和 m_param_lidar，参考 msg_callback 函数。
+### 6.10 Monitor.struct_monitor.CalcuLight
+用于在 msg_callback 中，接收到消息后更新 m_hz_light 和 m_param_light，参考 msg_callback 函数。
