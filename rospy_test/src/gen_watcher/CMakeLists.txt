@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   gen_watcher_msgs
+  nox_msgs
 )
 
 link_directories (
@@ -44,3 +45,7 @@ catkin_package(
 add_executable(test_sub src/test_sub.cpp)
 add_dependencies(test_sub ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(test_sub ${catkin_LIBRARIES})
+
+add_executable(location_node src/location.cpp)
+add_dependencies(location_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(location_node ${catkin_LIBRARIES})

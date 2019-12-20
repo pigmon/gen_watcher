@@ -1,1 +1,2 @@
-float64 fnum
+Header header
+float64 err_dist
