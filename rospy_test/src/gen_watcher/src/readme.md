@@ -87,3 +87,5 @@ void FromEncodedInt(uint32_t _encoded, bool _big_endian)
 用于在 msg_callback 中，接收到消息后更新 m_hz_lidar 和 m_param_lidar，参考 msg_callback 函数。
 ### 6.10 Monitor.struct_monitor.CalcuLight
 用于在 msg_callback 中，接收到消息后更新 m_hz_light 和 m_param_light，参考 msg_callback 函数。
+### 6.11 Monitor.struct_monitor.CalcuLocation
+用于在 msg_callback 中，接收到消息后更新 m_hz_location 和 m_param_location，参考 msg_callback 函数。
