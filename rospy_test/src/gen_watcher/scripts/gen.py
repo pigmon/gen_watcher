@@ -14,6 +14,7 @@ from sensor_msgs.msg import NavSatFix
 from sensor_msgs.msg import Image
 from sensor_msgs.msg import PointCloud2
 from gen_watcher_msgs.msg import arr_test
+from gen_watcher_msgs.msg import info
 
 hz_checker = ROSTopicHz(10, use_wtime=True)
 
@@ -85,6 +86,17 @@ def timer_callback(event):
 
 	node_msg.append(node_state('/arr_num', msg_dict['/arr_num']['hz'], 9, 1000, 'num', msg_dict['/arr_num']['param_value'], 1, 1000, msg_dict['/arr_num']['extra']))
 
+	ret = hz_checker.get_hz('/monitor_info')
+	if isinstance(ret, tuple) and len(ret) == 5:
+		msg_dict['/monitor_info']['hz'] = ret[0]
+	else:
+		msg_dict['/monitor_info']['hz'] = -1
+
+	if msg_dict['/monitor_info']['hz'] <= 0:
+		msg_dict['/monitor_info']['param_value'] = -1024
+
+	node_msg.append(node_state('/monitor_info', msg_dict['/monitor_info']['hz'], 0, 1000, 'err_dist', msg_dict['/monitor_info']['param_value'], 0, 2, msg_dict['/monitor_info']['extra']))
+
 	header = Header(stamp=rospy.Time.now())
 	big_msg = all_state(header, node_msg)
 	pub.publish(big_msg)
@@ -116,6 +128,11 @@ def gen_watcher_msgs_arr_test_callback(msg):
 	for i in range(len(msg.numbers)):
 		msg_dict['/arr_num']['extra'].append(msg.numbers[i].num)
 
+def gen_watcher_msgs_info_callback(msg):
+	global hz_checker
+	hz_checker.callback_hz(msg, '/monitor_info')
+	msg_dict['/monitor_info']['param_value'] = msg.err_dist
+
 def main():
 	rospy.init_node('listener', anonymous=False)
 	curr = rospy.get_rostime().to_sec()
@@ -140,18 +157,24 @@ def main():
 	sec_dict['msg'] = '/arr_num'
 	msg_dict['/arr_num'] = sec_dict
 	msg_dict['/arr_num']['param'] = 'num'
+	sec_dict = dict.fromkeys(msg_keys)
+	sec_dict['msg'] = '/monitor_info'
+	msg_dict['/monitor_info'] = sec_dict
+	msg_dict['/monitor_info']['param'] = 'err_dist'
 
 	hz_checker.set_msg_t0(curr, topic = '/imu/data')
 	hz_checker.set_msg_t0(curr, topic = '/gps')
 	hz_checker.set_msg_t0(curr, topic = '/Flir/image_raw')
 	hz_checker.set_msg_t0(curr, topic = '/rslidar_points')
 	hz_checker.set_msg_t0(curr, topic = '/arr_num')
+	hz_checker.set_msg_t0(curr, topic = '/monitor_info')
 
 	rospy.Subscriber('/imu/data', Imu, sensor_msgs_Imu_callback)
 	rospy.Subscriber('/gps', NavSatFix, sensor_msgs_NavSatFix_callback)
 	rospy.Subscriber('/Flir/image_raw', Image, sensor_msgs_Image_callback)
 	rospy.Subscriber('/rslidar_points', PointCloud2, sensor_msgs_PointCloud2_callback)
 	rospy.Subscriber('/arr_num', arr_test, gen_watcher_msgs_arr_test_callback)
+	rospy.Subscriber('/monitor_info', info, gen_watcher_msgs_info_callback)
 
 	rospy.Timer(rospy.Duration(1), timer_callback)
 

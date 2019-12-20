@@ -2,6 +2,7 @@
 #include <bitset>
 #include <ros/ros.h>
 #include "gen_watcher_msgs/all_state.h"
+#include "gen_watcher_msgs/info.h"
 
 const unsigned char NO_ERR   = 0;
 const unsigned char VALUE_LD = 1;
@@ -29,8 +30,8 @@ typedef union
         unsigned char m_param_bz    :2;
         unsigned char m_hz_light    :2;
         unsigned char m_param_light :2;
-        unsigned char m_place_holder_2  :2;
-        unsigned char m_place_holder_3  :2;
+        unsigned char m_hz_location  :2;
+        unsigned char m_param_location  :2;
 
         void Print()
         {
@@ -56,8 +57,8 @@ typedef union
                 std::bitset<2>(m_param_bz) << 
                 std::bitset<2>(m_hz_light) << 
                 std::bitset<2>(m_param_light) << 
-                std::bitset<2>(m_place_holder_2) << 
-                std::bitset<2>(m_place_holder_3) << std::endl;
+                std::bitset<2>(m_hz_location) << 
+                std::bitset<2>(m_param_location) << std::endl;
         }
 
         // 这个_big_endian指的是编码成整数那边的大小端，不一定是本地的。
@@ -79,8 +80,8 @@ typedef union
                 m_param_bz = _encoded >> 8;
                 m_hz_light = _encoded >> 6;
                 m_param_light = _encoded >> 4;
-                m_place_holder_2 = _encoded >> 2;
-                m_place_holder_3 = _encoded;                
+                m_hz_location = _encoded >> 2;
+                m_param_location = _encoded;                
             }
             else 
             {
@@ -98,8 +99,8 @@ typedef union
                 m_param_bz = _encoded >> 22;
                 m_hz_light = _encoded >> 24;
                 m_param_light = _encoded >> 26;
-                m_place_holder_2 = _encoded >> 28;
-                m_place_holder_3 = _encoded >> 30;
+                m_hz_location = _encoded >> 28;
+                m_param_location = _encoded >> 30;
             }
         }
 
@@ -145,6 +146,13 @@ typedef union
                     break;
                 }
             }
+        }
+
+        void CalcuLocation(const double _hz_real, const double _hz_min, const double _hz_max, 
+            const double _value_real, const double _min, const double _max)
+        {
+            m_hz_location = (_hz_real < 0) ? NO_VALUE : ((_hz_real > _hz_max) ? VALUE_GD : ((_hz_real < _hz_min) ? VALUE_LD : NO_ERR));
+            m_param_location = (_hz_real < 0) ? NO_VALUE : ((_value_real > _max) ? VALUE_GD : ((_value_real < _min) ? VALUE_LD : NO_ERR));
         }
     } struct_monitor;
 
@@ -199,6 +207,10 @@ void msg_callback(const gen_watcher_msgs::all_state::ConstPtr &msg)
         else if (it->msg_name == "/arr_num")
         {
             obj_monitor.struct_monitor.CalcuLight(it->hz, it->hz_min, it->hz_max, it->extra, it->param_min, it->param_max);
+        }
+        else if (it->msg_name == "/monitor_info")
+        {
+            obj_monitor.struct_monitor.CalcuLocation(it->hz, it->hz_min, it->hz_max, it->param_value, it->param_min, it->param_max);
         }
     }
 
