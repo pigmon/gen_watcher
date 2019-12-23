@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   gen_watcher_msgs
   nox_msgs
   traffic_light
+  cam
 )
 
 link_directories (
@@ -25,19 +26,6 @@ include_directories(
 )
 
 set(CMAKE_AUTOMOC ON)
-
-# add_message_files(
-#   FILES
-#   Num.msg
-#   info.msg
-#   node_state.msg
-#   all_state.msg
-# )
-
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
 
 catkin_package(
     CATKIN_DEPENDS roscpp rospy std_msgs message_runtime

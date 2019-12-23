@@ -11,10 +11,59 @@
 #include <nav_msgs/Odometry.h>
 #include <gen_watcher_msgs/info.h>
 
-ros::Publisher pubber;
+// --------------------------------------------------------
+// 设定红绿灯和路测杆检测范围的常数
+// --------------------------------------------------------
+const double LIGHT_ORIGIN_X = 0;            // 红绿灯位置x
+const double LIGHT_ORIGIN_Y = 0;            // 红绿灯位置y
+const double LIGHT_R = 10;                  // 红绿灯检测半径
 
+// --------------------------------------------------------
+// 全局变量
+// --------------------------------------------------------
+ros::Publisher pubber;
 double CurrentX, CurrentY;
 double CurrentDistance = 0;
+bool InLightZone = true;
+
+// --------------------------------------------------------
+// 函数声明
+// --------------------------------------------------------
+bool in_range_of(const double _car_x, const double _car_y, const double _x, const double _y, const double _r);
+bool in_range_of(const double _x, const double _y, const double _r);
+void process_pub(const ros::TimerEvent &_evt);
+void scene_callback(const nox_msgs::Scene::ConstPtr &msg);
+void gps_odom_callback(const nav_msgs::Odometry::ConstPtr &msg);
+
+int main(int argc,char ** argv)
+{
+    ros::init(argc,argv,"location_node");
+
+    ros::NodeHandle n;
+    // publish
+    pubber = n.advertise<gen_watcher_msgs::info>("monitor_info", 1000);
+    ros::Timer timer = n.createTimer(ros::Duration(1.0), process_pub);
+    // subscribe
+    ros::Subscriber msg_sub = n.subscribe("/scene", 1, scene_callback);
+    ros::Subscriber msg_sub2 = n.subscribe("/gps/odom", 1, gps_odom_callback);
+
+    ros::spin();
+
+    return 0;
+}
+
+bool in_range_of(const double _car_x, const double _car_y, const double _x, const double _y, const double _r)
+{
+    double distance = sqrt((_car_x - _x) * (_car_x - _x) + (_car_y - _y) * (_car_y - _y));
+    //return distance <= _r;
+    return true;
+}
+
+bool in_range_of(const double _x, const double _y, const double _r)
+{
+    //return in_range_of(CurrentX, CurrentY, _x, _y, _r);
+    return true;
+}
 
 void process_pub(const ros::TimerEvent &_evt)
 {
@@ -22,6 +71,7 @@ void process_pub(const ros::TimerEvent &_evt)
     msg.header.stamp = ros::Time::now();
     msg.header.frame_id = "imu_base";
     msg.err_dist = CurrentDistance;
+    msg.in_light_zone = InLightZone;
 
     pubber.publish(msg);
 }
@@ -53,6 +103,7 @@ void scene_callback(const nox_msgs::Scene::ConstPtr &msg)
             }             
         }
     }
+    
 
     //2. 用欧式距离算出最近点和车的距离
     CurrentDistance = sqrt((X - ref_x) * (X - ref_x) + (Y - ref_y) * (Y - ref_y));
@@ -63,21 +114,6 @@ void gps_odom_callback(const nav_msgs::Odometry::ConstPtr &msg)
 {
     CurrentX = msg->pose.pose.position.x;
     CurrentY = msg->pose.pose.position.y;
-}
 
-int main(int argc,char ** argv)
-{
-    ros::init(argc,argv,"location_node");
-
-    ros::NodeHandle n;
-    // publish
-    pubber = n.advertise<gen_watcher_msgs::info>("monitor_info", 1000);
-    ros::Timer timer = n.createTimer(ros::Duration(1.0), process_pub);
-    // subscribe
-    ros::Subscriber msg_sub = n.subscribe("/scene", 1, scene_callback);
-    ros::Subscriber msg_sub2 = n.subscribe("/gps/odom", 1, gps_odom_callback);
-
-    ros::spin();
-
-    return 0;
+    InLightZone = in_range_of(LIGHT_ORIGIN_X, LIGHT_ORIGIN_Y, LIGHT_R);
 }

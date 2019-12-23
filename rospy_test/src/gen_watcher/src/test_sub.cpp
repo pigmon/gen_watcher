@@ -9,6 +9,8 @@ const unsigned char VALUE_LD = 1;
 const unsigned char VALUE_GD = 2;
 const unsigned char NO_VALUE = 3;
 
+bool IsInLightZone = false;
+
 bool IsBigEndian();
 
 typedef union 
@@ -138,14 +140,18 @@ typedef union
             m_hz_light = (_hz_real < 0) ? NO_VALUE : ((_hz_real > _hz_max) ? VALUE_GD : ((_hz_real < _hz_min) ? VALUE_LD : NO_ERR));
 
             m_param_light = 0;
-            for (size_t i = 0; i < _extra_array.size(); i++)
+            if (IsInLightZone)
             {
-                if (_extra_array[i] < _min || _extra_array[i] > _max)
+                for (size_t i = 0; i < _extra_array.size(); i++)
                 {
-                    m_param_light = 3;
-                    break;
+                    if (_extra_array[i] < _min || _extra_array[i] > _max)
+                    {
+                        m_param_light = 3;
+                        break;
+                    }
                 }
             }
+            IsInLightZone = false;
         }
 
         void CalcuLocation(const double _hz_real, const double _hz_min, const double _hz_max, 
@@ -153,6 +159,13 @@ typedef union
         {
             m_hz_location = (_hz_real < 0) ? NO_VALUE : ((_hz_real > _hz_max) ? VALUE_GD : ((_hz_real < _hz_min) ? VALUE_LD : NO_ERR));
             m_param_location = (_hz_real < 0) ? NO_VALUE : ((_value_real > _max) ? VALUE_GD : ((_value_real < _min) ? VALUE_LD : NO_ERR));
+        }
+
+        void CalcuBlindZone(const double _hz_real, const double _hz_min, const double _hz_max, 
+            const double _value_real, const double _min, const double _max)
+        {
+            m_hz_bz = (_hz_real < 0) ? NO_VALUE : ((_hz_real > _hz_max) ? VALUE_GD : ((_hz_real < _hz_min) ? VALUE_LD : NO_ERR));
+            m_param_bz = (_hz_real < 0) ? NO_VALUE : ((_value_real > _max) ? VALUE_GD : ((_value_real < _min) ? VALUE_LD : NO_ERR));
         }
     } struct_monitor;
 
@@ -188,29 +201,33 @@ void msg_callback(const gen_watcher_msgs::all_state::ConstPtr &msg)
         // std::cout << "Param Min: " << (int)it->param_min << std::endl;
         // std::cout << "Param Max: " << (int)it->param_max << std::endl;
 
-        if (it->msg_name == "/gps")
+        if (it->key == "gps")
         {
             obj_monitor.struct_monitor.CalcuGPS(it->hz, it->hz_min, it->hz_max, it->param_value, it->param_min, it->param_max);
         }
-        else if (it->msg_name == "/imu/data")
+        else if (it->key == "imu")
         {
             obj_monitor.struct_monitor.CalcuIMU(it->hz, it->hz_min, it->hz_max, it->param_value, it->param_min, it->param_max);
         }
-        else if (it->msg_name == "/Flir/image_raw")
+        else if (it->key == "cam")
         {
             obj_monitor.struct_monitor.CalcuCAM(it->hz, it->hz_min, it->hz_max, it->param_value, it->param_min, it->param_max);
         }
-        else if (it->msg_name == "/rslidar_points")
+        else if (it->key == "lidar")
         {
             obj_monitor.struct_monitor.CalcuLidar(it->hz, it->hz_min, it->hz_max, it->param_value, it->param_min, it->param_max);
         }
-        else if (it->msg_name == "/traffic_light_state")
+        else if (it->key == "traffic_light")
         {
             obj_monitor.struct_monitor.CalcuLight(it->hz, it->hz_min, it->hz_max, it->extra, it->param_min, it->param_max);
         }
-        else if (it->msg_name == "/monitor_info")
+        else if (it->key == "path_error")
         {
             obj_monitor.struct_monitor.CalcuLocation(it->hz, it->hz_min, it->hz_max, it->param_value, it->param_min, it->param_max);
+        }
+        else if (it->key == "blind_zone")
+        {
+            obj_monitor.struct_monitor.CalcuBlindZone(it->hz, it->hz_min, it->hz_max, it->param_value, it->param_min, it->param_max);
         }
     }
 
@@ -220,11 +237,17 @@ void msg_callback(const gen_watcher_msgs::all_state::ConstPtr &msg)
     std::cout << std::bitset<32>(obj_monitor.EncodedInt) << std::endl;
 }
 
+void info_callback(const gen_watcher_msgs::info::ConstPtr& msg)
+{
+    IsInLightZone = msg->in_light_zone != 0;
+}
+
 int main(int argc,char ** argv)
 {
     ros::init(argc,argv,"test_sub");
     ros::NodeHandle n;
-    ros::Subscriber msg_sub = n.subscribe("node_states", 100, msg_callback);
+    ros::Subscriber msg_sub = n.subscribe("node_states", 1, msg_callback);
+    ros::Subscriber info_sub = n.subscribe("monitor_info", 1, info_callback);
 
     //std::cout << "size of Monitor: " << sizeof(Monitor) << std::endl;
 

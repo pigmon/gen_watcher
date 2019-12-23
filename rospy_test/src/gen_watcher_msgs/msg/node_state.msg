@@ -1,4 +1,5 @@
 # 一个监视消息的数据
+string key
 string msg_name
 float64 hz
 float64 hz_min
