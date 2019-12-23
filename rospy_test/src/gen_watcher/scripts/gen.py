@@ -13,7 +13,7 @@ from sensor_msgs.msg import Imu
 from sensor_msgs.msg import NavSatFix
 from sensor_msgs.msg import Image
 from sensor_msgs.msg import PointCloud2
-from gen_watcher_msgs.msg import arr_test
+from traffic_light.msg import msg_traffic_light_list
 from gen_watcher_msgs.msg import info
 
 hz_checker = ROSTopicHz(10, use_wtime=True)
@@ -75,16 +75,16 @@ def timer_callback(event):
 
 	node_msg.append(node_state('/rslidar_points', msg_dict['/rslidar_points']['hz'], 9, 1000, 'data', msg_dict['/rslidar_points']['param_value'], 2000000, 3000000, msg_dict['/rslidar_points']['extra']))
 
-	ret = hz_checker.get_hz('/arr_num')
+	ret = hz_checker.get_hz('/traffic_light_state')
 	if isinstance(ret, tuple) and len(ret) == 5:
-		msg_dict['/arr_num']['hz'] = ret[0]
+		msg_dict['/traffic_light_state']['hz'] = ret[0]
 	else:
-		msg_dict['/arr_num']['hz'] = -1
+		msg_dict['/traffic_light_state']['hz'] = -1
 
-	if msg_dict['/arr_num']['hz'] <= 0:
-		msg_dict['/arr_num']['param_value'] = -1024
+	if msg_dict['/traffic_light_state']['hz'] <= 0:
+		msg_dict['/traffic_light_state']['param_value'] = -1024
 
-	node_msg.append(node_state('/arr_num', msg_dict['/arr_num']['hz'], 9, 1000, 'num', msg_dict['/arr_num']['param_value'], 1, 1000, msg_dict['/arr_num']['extra']))
+	node_msg.append(node_state('/traffic_light_state', msg_dict['/traffic_light_state']['hz'], 39, 1000, 'color', msg_dict['/traffic_light_state']['param_value'], 1, 2, msg_dict['/traffic_light_state']['extra']))
 
 	ret = hz_checker.get_hz('/monitor_info')
 	if isinstance(ret, tuple) and len(ret) == 5:
@@ -121,12 +121,12 @@ def sensor_msgs_PointCloud2_callback(msg):
 	hz_checker.callback_hz(msg, '/rslidar_points')
 	msg_dict['/rslidar_points']['param_value'] = len(msg.data)
 
-def gen_watcher_msgs_arr_test_callback(msg):
+def traffic_light_msg_traffic_light_list_callback(msg):
 	global hz_checker
-	hz_checker.callback_hz(msg, '/arr_num')
-	msg_dict['/arr_num']['extra'] = []
-	for i in range(len(msg.numbers)):
-		msg_dict['/arr_num']['extra'].append(msg.numbers[i].num)
+	hz_checker.callback_hz(msg, '/traffic_light_state')
+	msg_dict['/traffic_light_state']['extra'] = []
+	for i in range(len(msg.lights)):
+		msg_dict['/traffic_light_state']['extra'].append(msg.lights[i].color)
 
 def gen_watcher_msgs_info_callback(msg):
 	global hz_checker
@@ -154,9 +154,9 @@ def main():
 	msg_dict['/rslidar_points'] = sec_dict
 	msg_dict['/rslidar_points']['param'] = 'data'
 	sec_dict = dict.fromkeys(msg_keys)
-	sec_dict['msg'] = '/arr_num'
-	msg_dict['/arr_num'] = sec_dict
-	msg_dict['/arr_num']['param'] = 'num'
+	sec_dict['msg'] = '/traffic_light_state'
+	msg_dict['/traffic_light_state'] = sec_dict
+	msg_dict['/traffic_light_state']['param'] = 'color'
 	sec_dict = dict.fromkeys(msg_keys)
 	sec_dict['msg'] = '/monitor_info'
 	msg_dict['/monitor_info'] = sec_dict
@@ -166,14 +166,14 @@ def main():
 	hz_checker.set_msg_t0(curr, topic = '/gps')
 	hz_checker.set_msg_t0(curr, topic = '/Flir/image_raw')
 	hz_checker.set_msg_t0(curr, topic = '/rslidar_points')
-	hz_checker.set_msg_t0(curr, topic = '/arr_num')
+	hz_checker.set_msg_t0(curr, topic = '/traffic_light_state')
 	hz_checker.set_msg_t0(curr, topic = '/monitor_info')
 
 	rospy.Subscriber('/imu/data', Imu, sensor_msgs_Imu_callback)
 	rospy.Subscriber('/gps', NavSatFix, sensor_msgs_NavSatFix_callback)
 	rospy.Subscriber('/Flir/image_raw', Image, sensor_msgs_Image_callback)
 	rospy.Subscriber('/rslidar_points', PointCloud2, sensor_msgs_PointCloud2_callback)
-	rospy.Subscriber('/arr_num', arr_test, gen_watcher_msgs_arr_test_callback)
+	rospy.Subscriber('/traffic_light_state', msg_traffic_light_list, traffic_light_msg_traffic_light_list_callback)
 	rospy.Subscriber('/monitor_info', info, gen_watcher_msgs_info_callback)
 
 	rospy.Timer(rospy.Duration(1), timer_callback)

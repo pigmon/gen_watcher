@@ -204,7 +204,7 @@ void msg_callback(const gen_watcher_msgs::all_state::ConstPtr &msg)
         {
             obj_monitor.struct_monitor.CalcuLidar(it->hz, it->hz_min, it->hz_max, it->param_value, it->param_min, it->param_max);
         }
-        else if (it->msg_name == "/arr_num")
+        else if (it->msg_name == "/traffic_light_state")
         {
             obj_monitor.struct_monitor.CalcuLight(it->hz, it->hz_min, it->hz_max, it->extra, it->param_min, it->param_max);
         }

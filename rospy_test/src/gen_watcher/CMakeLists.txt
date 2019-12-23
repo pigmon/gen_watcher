@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   gen_watcher_msgs
   nox_msgs
+  traffic_light
 )
 
 link_directories (
