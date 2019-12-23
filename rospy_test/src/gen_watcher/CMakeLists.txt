@@ -11,7 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
   gen_watcher_msgs
   nox_msgs
   traffic_light
-  cam
 )
 
 link_directories (

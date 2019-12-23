@@ -15,7 +15,7 @@ from sensor_msgs.msg import Image
 from sensor_msgs.msg import PointCloud2
 from traffic_light.msg import msg_traffic_light_list
 from gen_watcher_msgs.msg import info
-from cam.msg import DetectedObjectArray
+from gen_watcher_msgs.msg import DetectedObjectArray
 
 hz_checker = ROSTopicHz(10, use_wtime=True)
 
@@ -145,7 +145,7 @@ def gen_watcher_msgs_info_callback(msg):
 	hz_checker.callback_hz(msg, '/monitor_info')
 	msg_dict['path_error']['param_value'] = msg.err_dist
 
-def cam_DetectedObjectArray_callback(msg):
+def gen_watcher_msgs_DetectedObjectArray_callback(msg):
 	global hz_checker
 	hz_checker.callback_hz(msg, '/camera_detect_msg')
 	msg_dict['blind_zone']['param_value'] = len(msg.objects)
@@ -197,7 +197,7 @@ def main():
 	rospy.Subscriber('/rslidar_points', PointCloud2, sensor_msgs_PointCloud2_callback)
 	rospy.Subscriber('/traffic_light_state', msg_traffic_light_list, traffic_light_msg_traffic_light_list_callback)
 	rospy.Subscriber('/monitor_info', info, gen_watcher_msgs_info_callback)
-	rospy.Subscriber('/camera_detect_msg', DetectedObjectArray, cam_DetectedObjectArray_callback)
+	rospy.Subscriber('/camera_detect_msg', DetectedObjectArray, gen_watcher_msgs_DetectedObjectArray_callback)
 
 	rospy.Timer(rospy.Duration(1), timer_callback)
 

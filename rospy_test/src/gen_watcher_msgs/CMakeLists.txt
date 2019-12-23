@@ -7,6 +7,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  sensor_msgs
+  geometry_msgs
   message_generation
 )
 
@@ -19,11 +21,15 @@ add_message_files(
   node_state.msg
   all_state.msg
   arr_test.msg
+  DetectedObject.msg
+  DetectedObjectArray.msg
 )
 
 generate_messages(
   DEPENDENCIES
   std_msgs
+  sensor_msgs
+  geometry_msgs
 )
 
 catkin_package(
