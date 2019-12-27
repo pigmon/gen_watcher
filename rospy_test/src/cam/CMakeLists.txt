@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(gen_watcher_msgs)
+project(cam)
 
 add_compile_options(-std=c++11)
 
@@ -16,11 +16,8 @@ set(CMAKE_AUTOMOC ON)
 
 add_message_files(
   FILES
-  Num.msg
-  info.msg
-  node_state.msg
-  all_state.msg
-  arr_test.msg
+  DetectedObject.msg
+  DetectedObjectArray.msg
 )
 
 generate_messages(
